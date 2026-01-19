@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESIC Challan Data Extractor</title>
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+</script>
+
+<!-- SheetJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Segoe UI",Arial,sans-serif;
+  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+  min-height:100vh;padding:20px
+}
+h1{text-align:center;color:#fff;margin-bottom:25px}
+.container{
+  max-width:1400px;margin:auto;background:#fff;
+  padding:25px;border-radius:12px;
+  box-shadow:0 10px 40px rgba(0,0,0,.2)
+}
+.controls{
+  display:flex;gap:12px;flex-wrap:wrap;
+  align-items:center;margin-bottom:20px
+}
+.file-input-wrapper input{display:none}
+.file-input-label{
+  padding:10px 20px;background:#4a5568;color:#fff;
+  border-radius:6px;cursor:pointer;font-weight:600
+}
+button{
+  padding:10px 22px;border:none;border-radius:6px;
+  cursor:pointer;font-weight:600
+}
+button.primary{background:#1f6fb2;color:#fff}
+button.success{background:#2e8b57;color:#fff}
+button.danger{background:#dc3545;color:#fff}
+button:disabled{background:#9aa5b1;cursor:not-allowed}
+.stats{display:none;gap:15px;margin-bottom:20px}
+.stat-card{
+  flex:1;min-width:150px;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  color:#fff;padding:15px;border-radius:8px;text-align:center
+}
+.table-wrapper{overflow-x:auto;border:1px solid #e2e8f0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border:1px solid #e2e8f0;padding:10px}
+th{
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  color:#fff;text-align:center
+}
+td.numeric{text-align:right;font-family:monospace}
+.empty-state{text-align:center;color:#94a3b8}
+.note{
+  margin-top:20px;padding:15px;background:#f8fafc;
+  border-left:4px solid #667eea;font-size:13px
+}
+</style>
+</head>
+
+<body>
+
+<h1>📊 ESIC Challan Data Extractor</h1>
+
+<div class="container">
+
+  <div class="controls">
+    <div class="file-input-wrapper">
+      <input type="file" id="fileInput" multiple accept=".pdf,.html,.htm">
+      <label for="fileInput" class="file-input-label">📁 Choose Files</label>
+    </div>
+    <span id="fileCount">No files selected</span>
+    <button class="primary" id="extractBtn">🔍 Extract Data</button>
+    <button class="success" id="exportBtn" disabled>📥 Export to Excel</button>
+    <button class="danger" id="clearBtn" disabled>🗑️ Clear</button>
+  </div>
+
+  <div class="stats" id="stats">
+    <div class="stat-card">
+      <div>Total Records</div>
+      <div id="totalRecords">0</div>
+    </div>
+    <div class="stat-card">
+      <div>Total Amount (₹)</div>
+      <div id="totalAmount">0</div>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <table id="resultTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Employer Code</th>
+          <th>Employer Name</th>
+          <th>Contribution Period</th>
+          <th>Challan Number</th>
+          <th>Created Date</th>
+          <th>Submitted Date</th>
+          <th>Transaction No</th>
+          <th>Total Amount (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="empty-state">
+          <td colspan="9">No data yet. Upload ESIC challans.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    ✔ Employer Name auto-cleaned<br>
+    ✔ Supports PDF & HTML challans<br>
+    ✔ Excel export is fully client-side
+  </div>
+
+</div>
+
+<script>
+/* ================= Helpers ================= */
+
+function normalize(t){return t.replace(/\s+/g," ").replace(/₹/g,"").trim()}
+function extract(t,r){const m=t.match(r);return m?m[1].trim():""}
+function cleanEmployerName(n){
+  return n.replace(/Challan.*$/i,"")
+          .replace(/Contribution.*$/i,"")
+          .replace(/Period.*$/i,"")
+          .replace(/Number.*$/i,"")
+          .trim()
+}
+function parseAmount(a){
+  if(!a)return 0;
+  const n=parseFloat(a.replace(/,/g,""));
+  return isNaN(n)?0:n
+}
+
+/* ================= Parser ================= */
+
+function parseESICText(raw){
+  const t=normalize(raw);
+
+  let name=extract(
+    t,/Employer[’']?s?\s*Name\s*[:\-]?\s*([A-Z0-9\s.\-&]+)/i
+  );
+  name=cleanEmployerName(name);
+
+  return{
+    employerCode:extract(t,/Employer[’']?s?\s*Code\s*No\s*[:\-]?\s*([A-Z0-9\/\-]+)/i),
+    employerName:name,
+    contributionPeriod:extract(t,/Challan\s*Period\s*[:\-]?\s*([A-Za-z]{3}\s*-\s*\d{4})/i),
+    challanNumber:extract(t,/Challan\s*Number\s*[:\-]?\s*([A-Z0-9]+)/i),
+    challanCreatedDate:extract(t,/Created\s*Date\s*[:\-]?\s*([0-9\/\-]+)/i),
+    challanSubmittedDate:extract(t,/Submitted\s*Date\s*[:\-]?\s*([0-9\/\-]+)/i),
+    transactionNumber:extract(t,/Transaction\s*Number\s*[:\-]?\s*([A-Z0-9]+)/i),
+    totalAmount:extract(t,/Amount\s*Paid\s*[:\-]?\s*([0-9,\.]+)/i)
+  };
+}
+
+/* ================= Readers ================= */
+
+async function readPDF(f){
+  const b=await f.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data:b}).promise;
+  let t="";
+  for(let i=1;i<=pdf.numPages;i++){
+    const p=await pdf.getPage(i);
+    const c=await p.getTextContent();
+    t+=" "+c.items.map(x=>x.str).join(" ");
+  }
+  return t;
+}
+async function readHTML(f){
+  const h=await f.text();
+  const d=document.createElement("div");
+  d.innerHTML=h;
+  return d.innerText;
+}
+
+/* ================= UI Logic ================= */
+
+let extractedData=[];
+
+function renderTable(){
+  const tb=document.querySelector("#resultTable tbody");
+  tb.innerHTML="";
+  extractedData.forEach((d,i)=>{
+    const tr=document.createElement("tr");
+    [
+      i+1,d.employerCode,d.employerName,d.contributionPeriod,
+      d.challanNumber,d.challanCreatedDate,
+      d.challanSubmittedDate,d.transactionNumber,
+      d.totalAmount
+    ].forEach((v,idx)=>{
+      const td=document.createElement("td");
+      td.textContent=v||"";
+      if(idx===8)td.className="numeric";
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+}
+
+function updateStats(){
+  document.getElementById("stats").style.display=
+    extractedData.length?"flex":"none";
+  document.getElementById("totalRecords").textContent=extractedData.length;
+  document.getElementById("totalAmount").textContent=
+    extractedData.reduce((s,d)=>s+parseAmount(d.totalAmount),0)
+      .toLocaleString("en-IN",{minimumFractionDigits:2});
+}
+
+/* ================= Events ================= */
+
+fileInput.onchange=e=>{
+  fileCount.textContent=e.target.files.length
+    ?`${e.target.files.length} file(s) selected`
+    :"No files selected";
+};
+
+extractBtn.onclick=async()=>{
+  const files=fileInput.files;
+  if(!files.length){alert("Select files");return}
+  extractedData=[];
+  for(const f of files){
+    const t=f.type==="application/pdf"?await readPDF(f):await readHTML(f);
+    extractedData.push(parseESICText(t));
+  }
+  renderTable();updateStats();
+  exportBtn.disabled=false;clearBtn.disabled=false;
+};
+
+exportBtn.onclick=()=>{
+  const data=[[
+    "#","Employer Code","Employer Name","Contribution Period",
+    "Challan Number","Created Date","Submitted Date",
+    "Transaction Number","Total Amount"
+  ]];
+  extractedData.forEach((d,i)=>{
+    data.push([
+      i+1,d.employerCode,d.employerName,d.contributionPeriod,
+      d.challanNumber,d.challanCreatedDate,
+      d.challanSubmittedDate,d.transactionNumber,
+      parseAmount(d.totalAmount)
+    ]);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"ESIC");
+  XLSX.writeFile(wb,"ESIC_Challan_Summary.xlsx");
+};
+
+clearBtn.onclick=()=>{
+  extractedData=[];
+  document.querySelector("#resultTable tbody").innerHTML=
+    `<tr class="empty-state"><td colspan="9">No data yet.</td></tr>`;
+  stats.style.display="none";
+  exportBtn.disabled=true;clearBtn.disabled=true;
+  fileInput.value="";fileCount.textContent="No files selected";
+};
+</script>
+
+</body>
+</html>

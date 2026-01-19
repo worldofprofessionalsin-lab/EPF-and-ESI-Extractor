@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EPF Payment Receipt Extractor</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+body{
+  font-family:"Segoe UI";
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  padding:20px;
+}
+h1{text-align:center;color:#fff;margin-bottom:20px}
+.container{
+  background:#fff;padding:25px;border-radius:12px;
+  max-width:1200px;margin:auto
+}
+button{padding:10px 20px;font-weight:700;border:none;border-radius:6px}
+.primary{background:#1f6fb2;color:#fff}
+.success{background:#2e8b57;color:#fff}
+pre{background:#f8fafc;padding:15px;border-radius:8px;margin-top:20px}
+</style>
+</head>
+
+<body>
+
+<h1>🧾 EPF Payment Receipt Extractor</h1>
+
+<div class="container">
+<input type="file" id="file" accept=".pdf">
+<button class="primary" onclick="extract()">Extract</button>
+<button class="success" onclick="exportXls()">Export</button>
+
+<pre id="output"></pre>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let data={};
+
+async function extract(){
+  const f=file.files[0];
+  if(!f) return alert("Select PDF");
+
+  const pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;
+  let t="";
+  for(let i=1;i<=pdf.numPages;i++){
+    const p=await pdf.getPage(i);
+    const c=await p.getTextContent();
+    t+=" "+c.items.map(x=>x.str).join(" ");
+  }
+  t=t.replace(/\s+/g," ");
+
+  const g=k=>(t.match(new RegExp(k+"\\s*:\\s*([^:]+)","i"))||[])[1];
+
+  data={
+    TRRN:g("TRRN No"),
+    Status:g("Challan Status"),
+    Bank:g("Payment Confirmation Bank"),
+    CRN:g("CRN"),
+    PaymentDate:g("Payment Date"),
+    Amount:g("Total Amount")
+  };
+
+  output.textContent=JSON.stringify(data,null,2);
+}
+
+function exportXls(){
+  const ws=XLSX.utils.json_to_sheet([data]);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"Receipt");
+  XLSX.writeFile(wb,"EPF_Payment_Receipt.xlsx");
+}
+</script>
+
+</body>
+</html>

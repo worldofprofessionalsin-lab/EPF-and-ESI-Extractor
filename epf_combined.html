@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>EPF Combined Challan Extractor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+</script>
+
+<!-- SheetJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body{
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+  }
+  h1{
+    text-align:center;
+    color:#fff;
+    margin-bottom:20px;
+    letter-spacing:.3px;
+    font-weight:800;
+  }
+  .container{
+    max-width: 1400px;
+    margin: auto;
+    background: #fff;
+    padding: 22px;
+    border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.2);
+  }
+  .controls{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:center;
+    margin-bottom:14px;
+  }
+  .file-input-wrapper input{ display:none; }
+  .file-input-label{
+    padding:10px 18px;
+    background:#4a5568;
+    color:#fff;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:700;
+  }
+  button{
+    padding:10px 18px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:800;
+    display:inline-flex;
+    gap:8px;
+    align-items:center;
+  }
+  button.primary{ background:#1f6fb2; color:#fff; }
+  button.success{ background:#2e8b57; color:#fff; }
+  button.danger{ background:#dc3545; color:#fff; }
+  button.neutral{ background:#6b7280; color:#fff; }
+  button:disabled{ background:#9aa5b1; cursor:not-allowed; }
+
+  .stats{
+    margin: 12px 0 16px;
+    background: linear-gradient(135deg,#667eea,#764ba2);
+    color:#fff;
+    border-radius: 10px;
+    padding: 14px 16px;
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .stats .pill{
+    background: rgba(255,255,255,.18);
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: 800;
+  }
+
+  .table-wrapper{
+    overflow-x:auto;
+    border:1px solid #e2e8f0;
+    border-radius: 10px;
+  }
+  table{
+    width:100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th, td{
+    border: 1px solid #e2e8f0;
+    padding: 10px;
+    vertical-align: top;
+  }
+  th{
+    background: linear-gradient(135deg,#667eea,#764ba2);
+    color:#fff;
+    text-align:center;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+  td.numeric{
+    text-align:right;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    white-space: nowrap;
+  }
+  td.wrap{
+    white-space: normal;
+    word-break: break-word;
+  }
+  .empty{
+    text-align:center;
+    color:#94a3b8;
+  }
+
+  /* Debug modal */
+  .modal{
+    position:fixed;
+    inset:0;
+    background: rgba(0,0,0,.45);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding: 18px;
+    z-index: 999;
+  }
+  .modal-card{
+    width: min(1100px, 96vw);
+    max-height: 86vh;
+    background:#fff;
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.35);
+    display:flex;
+    flex-direction:column;
+  }
+  .modal-head{
+    padding: 14px 16px;
+    background: linear-gradient(135deg,#667eea,#764ba2);
+    color:#fff;
+    font-weight: 900;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .modal-body{
+    padding: 12px 16px;
+    overflow:auto;
+  }
+  pre{
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+</style>
+</head>
+
+<body>
+<h1>🏦 EPF Combined Challan Extractor</h1>
+
+<div class="container">
+  <div class="controls">
+    <div class="file-input-wrapper">
+      <input type="file" id="fileInput" multiple accept=".pdf" />
+      <label for="fileInput" class="file-input-label">📁 Choose PDFs</label>
+    </div>
+
+    <span id="fileCount" style="font-weight:800;color:#334155;">No files selected</span>
+
+    <button class="primary" onclick="extract()">🔍 Extract</button>
+    <button class="success" id="exportBtn" onclick="exportExcel()" disabled>📥 Export</button>
+    <button class="danger" onclick="clearAll()">🧹 Clear</button>
+  </div>
+
+  <div class="stats" id="stats" style="display:none;">
+    <div class="pill">Total Rows: <span id="rowCount">0</span></div>
+    <div class="pill">Files Parsed: <span id="fileParsedCount">0</span></div>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Month</th>
+          <th>Year</th>
+          <th>Particulars</th>
+          <th>A/C.01</th>
+          <th>A/C.02</th>
+          <th>A/C.10</th>
+          <th>A/C.21</th>
+          <th>A/C.22</th>
+          <th>Total</th>
+          <th>Date of Generation</th>
+          <th>File Name</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr class="empty"><td colspan="12">Upload EPF Combined Challan PDFs</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Debug modal -->
+<div class="modal" id="dbgModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>Parsed PDF Text (Debug)</div>
+      <button class="danger" onclick="closeDebug()">✖ Close</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+        <label style="font-weight:900;color:#334155;">File:</label>
+        <select id="dbgSelect" style="padding:8px 10px;border-radius:8px;border:1px solid #cbd5e1;min-width:320px;"
+                onchange="renderDebugText()"></select>
+      </div>
+      <pre id="dbgText"></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+let rows = [];
+let debugTexts = []; // [{name, text}]
+
+fileInput.onchange = e => {
+  fileCount.textContent = e.target.files.length
+    ? `${e.target.files.length} file(s) selected`
+    : "No files selected";
+};
+
+function clearAll(){
+  rows = [];
+  debugTexts = [];
+  tbody.innerHTML = `<tr class="empty"><td colspan="12">Upload EPF Combined Challan PDFs</td></tr>`;
+  document.getElementById("stats").style.display = "none";
+  document.getElementById("exportBtn").disabled = true;
+  document.getElementById("viewTextBtn").disabled = true;
+  fileInput.value = "";
+  fileCount.textContent = "No files selected";
+}
+
+function normText(text){
+  return (text || "")
+    .replace(/\u00a0/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\s+\n/g, "\n")
+    .replace(/\n\s+/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+async function readPdfAsText(file){
+  const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+  let out = "";
+  for(let i=1;i<=pdf.numPages;i++){
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    // Join with spaces; also keep some line-like breaks by injecting \n
+    // When PDF.js returns items in reading order, this is typically enough for EPFO challan.
+    out += content.items.map(x => x.str).join(" ") + "\n";
+  }
+  return normText(out);
+}
+
+function pickMonthYear(text){
+  // From your sample: "Dues for the wage month of ... April 2023"
+  const m = text.match(/Dues\s+for\s+the\s+wage\s+month\s+of[\s\S]*?\b([A-Za-z]+)\s+(20\d{2})\b/i);
+  return {
+    month: m ? m[1].slice(0,3) : "",
+    year:  m ? m[2] : ""
+  };
+}
+
+function pickGenDate(text){
+  // "system generated challan on 10-MAY-2023 18:50"
+  const m = text.match(/system\s+generated\s+challan\s+on\s+(\d{1,2}-[A-Z]{3}-\d{4})/i);
+  return m ? m[1] : "";
+}
+
+function pickEstName(text){
+  // In your sample parsed text: TRRN line shows 13-digit number then company name then "Total Subscribers"
+  // We'll do: find TRRN 13-digit number, then capture next line-ish chunk until "Total Subscribers" or "Total Subscribers :" etc.
+  // If PDF.js doesn't keep line breaks well, we still can use token-based capture.
+  const trrn = text.match(/\b(\d{13})\b/);
+  if(!trrn) return "";
+
+  const idx = text.indexOf(trrn[1]);
+  if(idx === -1) return "";
+
+  const tail = text.slice(idx + trrn[1].length);
+
+  // capture establishment name up to "Total Subscribers" or "Total Subscribers :" or "Total Subscribers"
+  const m = tail.match(/([A-Z0-9&().,'\-\/\s]{3,}?)\s+Total\s+Subscribers\s*:/i);
+  if(m) return m[1].trim();
+
+  // fallback: up to "Total Subscribers" even without colon
+  const m2 = tail.match(/([A-Z0-9&().,'\-\/\s]{3,}?)\s+Total\s+Subscribers\b/i);
+  if(m2) return m2[1].trim();
+
+  // last fallback: first 8-12 words after TRRN
+  return tail.trim().split(/\s+/).slice(0,12).join(" ");
+}
+
+function parseSlRow(text, slNo){
+  // Matches exactly like sample parsed text:
+  // "1 Administration Charges 0 5,253 0 0 0 5,253"
+  // "2 Employer's Share Of 42,128 0 83,956 5,259 0 131,343"
+  // "3 Employee's Share Of 1,26,059 0 0 0 0 126,059"
+  //
+  // We capture: particulars + 6 numeric columns (ac01..ac22 + total)
+  const re = new RegExp(
+    "\\b" + slNo + "\\s+([A-Za-z'\\s\\.]+?)\\s+" +               // particulars
+    "([0-9,]+)\\s+([0-9,]+)\\s+([0-9,]+)\\s+([0-9,]+)\\s+([0-9,]+)\\s+([0-9,]+)\\b", // 6 nums
+    "i"
+  );
+  const m = text.match(re);
+  if(!m) return null;
+
+  let particulars = m[1].replace(/\s+/g," ").trim();
+  // normalize naming exactly as you want
+  if (/Administration/i.test(particulars)) particulars = "Administration Charges";
+  else if (/Employer/i.test(particulars)) particulars = "Employer Share";
+  else if (/Employee/i.test(particulars)) particulars = "Employee Share";
+
+  return {
+    particulars,
+    ac01: m[2],
+    ac02: m[3],
+    ac10: m[4],
+
+    // 👇 FIXED SHIFT
+    total: m[5],   // value that was wrongly going to A/C.21
+    ac21:  m[6],   // value that was wrongly going to A/C.22
+    ac22:  m[7]    // value that was wrongly going to TOTAL
+  }};
+
+
+async function extract(){
+  const files = [...fileInput.files];
+  if(!files.length) return alert("Select PDF files");
+
+  rows = [];
+  debugTexts = [];
+
+  for(const file of files){
+    const text = await readPdfAsText(file);
+    debugTexts.push({ name: file.name, text });
+
+    const {month, year} = pickMonthYear(text);
+    const genDate = pickGenDate(text);
+    const estName = pickEstName(text);
+
+    const sl1 = parseSlRow(text, 1);
+    const sl2 = parseSlRow(text, 2);
+    const sl3 = parseSlRow(text, 3);
+
+    // If any row fails, we still show debug text so you can see what PDF.js read
+    if(!sl1 || !sl2 || !sl3){
+      console.warn("Failed to parse table rows for:", file.name);
+      continue;
+    }
+
+    [sl1, sl2, sl3].forEach(sl => {
+      rows.push({
+        estName,
+        month,
+        year,
+        particulars: sl.particulars,
+        ac01: sl.ac01,
+        ac02: sl.ac02,
+        ac10: sl.ac10,
+        ac21: sl.ac21,
+        ac22: sl.ac22,
+        total: sl.total,
+        genDate,
+        file: file.name
+      });
+    });
+  }
+
+  render();
+  setupDebug();
+}
+
+function render(){
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+
+  if(!rows.length){
+    tbody.innerHTML = `<tr class="empty"><td colspan="12">No EPF rows parsed. Click “View Parsed Text” and verify the extracted text.</td></tr>`;
+    document.getElementById("stats").style.display = "flex";
+    document.getElementById("rowCount").textContent = "0";
+    document.getElementById("fileParsedCount").textContent = String(debugTexts.length);
+    document.getElementById("exportBtn").disabled = true;
+    document.getElementById("viewTextBtn").disabled = debugTexts.length === 0;
+    return;
+  }
+
+  // Sort rows in fixed order per file
+  const order = { "Administration Charges": 1, "Employer Share": 2, "Employee Share": 3 };
+  rows.sort((a,b)=>{
+    if(a.file !== b.file) return a.file.localeCompare(b.file);
+    return (order[a.particulars]||99) - (order[b.particulars]||99);
+  });
+
+  rows.forEach(r => {
+    tbody.innerHTML += `
+      <tr>
+        <td class="wrap">${r.estName || ""}</td>
+        <td>${r.month || ""}</td>
+        <td>${r.year || ""}</td>
+        <td>${r.particulars || ""}</td>
+        <td class="numeric">${r.ac01 || ""}</td>
+        <td class="numeric">${r.ac02 || ""}</td>
+        <td class="numeric">${r.ac10 || ""}</td>
+        <td class="numeric">${r.ac21 || ""}</td>
+        <td class="numeric">${r.ac22 || ""}</td>
+        <td class="numeric">${r.total || ""}</td>
+        <td>${r.genDate || ""}</td>
+        <td class="wrap">${r.file || ""}</td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("stats").style.display = "flex";
+  document.getElementById("rowCount").textContent = String(rows.length);
+  document.getElementById("fileParsedCount").textContent = String(debugTexts.length);
+  document.getElementById("exportBtn").disabled = false;
+  document.getElementById("viewTextBtn").disabled = false;
+}
+
+function exportExcel(){
+  const ws = XLSX.utils.json_to_sheet(rows.map(r => ({
+    "Name": r.estName,
+    "Month": r.month,
+    "Year": r.year,
+    "Particulars": r.particulars,
+    "A/C.01": r.ac01,
+    "A/C.02": r.ac02,
+    "A/C.10": r.ac10,
+    "A/C.21": r.ac21,
+    "A/C.22": r.ac22,
+    "Total": r.total,
+    "Date of Generation": r.genDate,
+    "File Name": r.file
+  })));
+
+  /* ---- Apply Calibri 11 to all cells (best supported way) ---- */
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let R = range.s.r; R <= range.e.r; ++R) {
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
+      if (!cell) continue;
+      cell.s = {
+        font: {
+          name: "Calibri",
+          sz: 11
+        }
+      };
+    }
+  }
+
+  /* Column widths for clean look */
+  ws['!cols'] = [
+    { wch: 25 }, // Name
+    { wch: 8 },
+    { wch: 6 },
+    { wch: 22 },
+    { wch: 10 },
+    { wch: 10 },
+    { wch: 10 },
+    { wch: 10 },
+    { wch: 10 },
+    { wch: 10 },
+    { wch: 14 },
+    { wch: 50 }
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "EPF Combined");
+
+  XLSX.writeFile(wb, "EPF_Combined_Challan.xlsx");
+}
+{}
+
+/* ---------- Debug modal helpers ---------- */
+function setupDebug(){
+  const sel = document.getElementById("dbgSelect");
+  sel.innerHTML = "";
+  debugTexts.forEach((d, idx) => {
+    const opt = document.createElement("option");
+    opt.value = String(idx);
+    opt.textContent = d.name;
+    sel.appendChild(opt);
+  });
+  renderDebugText();
+}
+
+function openDebug(){
+  document.getElementById("dbgModal").style.display = "flex";
+  renderDebugText();
+}
+function closeDebug(){
+  document.getElementById("dbgModal").style.display = "none";
+}
+function renderDebugText(){
+  const sel = document.getElementById("dbgSelect");
+  const idx = Number(sel.value || 0);
+  const t = debugTexts[idx]?.text || "";
+  document.getElementById("dbgText").textContent = t;
+}
+</script>
+
+</body>
+</html>
