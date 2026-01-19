@@ -1,62 +1,413 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Statutory Challan Extractor</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<title>WOP Statutory Challan Xtract</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <style>
-body{
-  font-family:Segoe UI,Arial;
-  background:linear-gradient(135deg,#667eea,#764ba2);
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  color:#fff;
-}
-.container{
-  background:#fff;
-  color:#0f172a;
-  padding:40px;
-  border-radius:16px;
-  width:420px;
-  box-shadow:0 20px 50px rgba(0,0,0,.3);
-  text-align:center;
-}
-h1{margin-bottom:8px}
-p{font-size:13px;color:#475569;margin-bottom:25px}
-a{
-  display:block;
-  margin:12px 0;
-  padding:14px;
-  background:#1f6fb2;
-  color:#fff;
-  border-radius:10px;
-  text-decoration:none;
-  font-weight:700;
-}
-a:hover{background:#155a92}
-.footer{
-  margin-top:20px;
-  font-size:11px;
-  color:#64748b;
-}
+  :root{
+    --bg1:#0b1220;
+    --bg2:#0f1b33;
+    --card:#ffffff;
+    --text:#0f172a;
+    --muted:#64748b;
+    --border:rgba(255,255,255,.10);
+    --shadow:0 22px 70px rgba(2,6,23,.35);
+
+    --primary:#2563eb;
+    --primary2:#1d4ed8;
+
+    --ok:#22c55e;
+    --chip:#0b1220;
+
+    --glass: rgba(255,255,255,.06);
+    --glass2: rgba(255,255,255,.10);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family: "Segoe UI", Arial, sans-serif;
+    min-height:100vh;
+    background:
+      radial-gradient(1100px 600px at 15% 10%, rgba(37,99,235,.25), transparent 55%),
+      radial-gradient(900px 500px at 85% 0%, rgba(34,197,94,.16), transparent 55%),
+      linear-gradient(160deg, var(--bg1) 0%, var(--bg2) 100%);
+    color:#fff;
+    padding: 26px 18px;
+  }
+
+  .shell{ max-width: 1200px; margin: 0 auto; }
+
+  /* Topbar */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    padding:16px 18px;
+    border-radius:18px;
+    background: var(--glass);
+    border:1px solid var(--border);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 12px 40px rgba(0,0,0,.25);
+    flex-wrap:wrap;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width: 260px;
+  }
+
+  .logo{
+    width:46px;height:46px;
+    border-radius:14px;
+    background: rgba(255,255,255,.95);
+    color:#0f172a;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:900;
+    box-shadow: 0 10px 25px rgba(0,0,0,.25);
+    user-select:none;
+  }
+
+  .brand-text{display:flex;flex-direction:column;line-height:1.1}
+  .brand-text h1{
+    font-size:18px;
+    font-weight:900;
+    letter-spacing:.2px;
+  }
+  .brand-text p{
+    margin-top:4px;
+    font-size:12px;
+    color: rgba(255,255,255,.72);
+  }
+
+  .follow-bar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .follow-label{
+    color: rgba(255,255,255,.75);
+    font-size:12px;
+    font-weight:800;
+  }
+
+  .social-btn{
+    text-decoration:none;
+    font-weight:900;
+    font-size:12px;
+    padding:8px 12px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.16);
+    background: rgba(255,255,255,.08);
+    color:#fff;
+    transition: transform .08s ease, background .08s ease, opacity .08s ease;
+    box-shadow: 0 10px 22px rgba(0,0,0,.15);
+  }
+  .social-btn:hover{ background: rgba(255,255,255,.14); transform: translateY(-1px); }
+  .social-btn:active{ transform: translateY(0); opacity:.92; }
+
+  .social-btn.li{ border-color: rgba(10,102,194,.45); }
+  .social-btn.wa{ border-color: rgba(37,211,102,.45); }
+  .social-btn.ig{ border-color: rgba(225,48,108,.45); }
+
+  .follow-sep2{ color: rgba(255,255,255,.30); font-weight:900; margin:0 2px; }
+
+  .follow-mail{
+    color: rgba(255,255,255,.75);
+    font-size:12px;
+    font-weight:800;
+  }
+  .follow-mail a{
+    color:#93c5fd;
+    text-decoration:none;
+    font-weight:900;
+  }
+  .follow-mail a:hover{ text-decoration:underline; }
+
+  /* Hero */
+  .hero{
+    margin-top: 18px;
+    padding: 22px 18px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.04) 100%);
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 40px rgba(0,0,0,.22);
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .hero-left{ max-width: 740px; }
+  .hero-left h2{
+    font-size: 22px;
+    font-weight: 950;
+    letter-spacing:.2px;
+  }
+  .hero-left p{
+    margin-top:8px;
+    color: rgba(255,255,255,.75);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top: 14px;
+  }
+  .chip{
+    background: rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.14);
+    padding:8px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:900;
+    color: rgba(255,255,255,.86);
+  }
+
+  /* Cards */
+  .grid{
+    margin-top: 18px;
+    display:grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 14px;
+  }
+
+  .card{
+    grid-column: span 6;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 18px;
+    padding: 16px 16px;
+    box-shadow: var(--shadow);
+    transition: transform .10s ease, background .10s ease, border-color .10s ease;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    min-height: 160px;
+  }
+  .card:hover{
+    transform: translateY(-2px);
+    background: rgba(255,255,255,.08);
+    border-color: rgba(255,255,255,.16);
+  }
+
+  .card-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+
+  .badge{
+    font-size:11px;
+    font-weight:900;
+    padding:6px 10px;
+    border-radius:999px;
+    background: rgba(34,197,94,.14);
+    border:1px solid rgba(34,197,94,.30);
+    color:#d1fae5;
+    white-space:nowrap;
+  }
+
+  .card-title{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .card-title h3{
+    font-size:15px;
+    font-weight:950;
+    color:#fff;
+    letter-spacing:.15px;
+  }
+  .card-title p{
+    font-size:12px;
+    color: rgba(255,255,255,.72);
+    line-height: 1.45;
+  }
+
+  .card-actions{
+    margin-top:auto;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+  }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    text-decoration:none;
+    font-weight:950;
+    font-size:13px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    color:#fff;
+    background: linear-gradient(135deg, var(--primary), var(--primary2));
+    box-shadow: 0 10px 28px rgba(37,99,235,.25);
+    transition: transform .08s ease, opacity .08s ease;
+  }
+  .btn:hover{ transform: translateY(-1px); }
+  .btn:active{ transform: translateY(0); opacity:.92; }
+
+  .muted-link{
+    color: rgba(255,255,255,.72);
+    font-size:12px;
+    font-weight:800;
+    text-decoration:none;
+    border-bottom:1px dashed rgba(255,255,255,.28);
+    padding-bottom:2px;
+  }
+  .muted-link:hover{ color:#fff; border-bottom-color: rgba(255,255,255,.55); }
+
+  .footer{
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.10);
+    color: rgba(255,255,255,.75);
+    font-size: 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .mini{
+    color: rgba(255,255,255,.70);
+    font-weight:900;
+  }
+
+  @media (max-width: 860px){
+    .card{ grid-column: span 12; }
+    .hero{ align-items:stretch; }
+  }
 </style>
 </head>
 
 <body>
-<div class="container">
-  <h1>🧾 Statutory Challan Extractor</h1>
-  <p>Select the required extractor</p>
+  <div class="shell">
 
-  <a href="esic.html">📊 ESIC Challan Extractor</a>
-  <a href="epf_combined.html">🏦 EPF Combined Challan Extractor</a>
-  <a href="epf_payment_receipt.html">🧾 EPF Payment Receipt Extractor</a>
+    <div class="topbar">
+      <div class="brand">
+        <!-- If you want your logo image: replace this div with <img src="wop-logo.png" ...> -->
+        <img src="./wop-logo.png" alt="WOP Logo" style="width:46px;height:46px;border-radius:14px;background:#fff;padding:6px;object-fit:contain;box-shadow:0 10px 25px rgba(0,0,0,.25);" />
+        <div class="brand-text">
+          <h1>WOP Statutory Challan Xtract</h1>
+          <p>Client-side extractors • Excel-ready outputs • Audit-friendly</p>
+        </div>
+      </div>
 
-  <div class="footer">
-    ✔ 100% Client Side • ✔ No Uploads • ✔ Audit Friendly
+      <div class="follow-bar">
+        <span class="follow-label">Follow us:</span>
+        <a class="social-btn li" href="https://www.linkedin.com/in/thangaraju-s/" target="_blank" rel="noopener">LinkedIn</a>
+        <a class="social-btn wa" href="https://whatsapp.com/channel/0029VaeUJacEgGfE1V9taa2u" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="social-btn ig" href="https://www.instagram.com/world_of_professionals/" target="_blank" rel="noopener">Instagram</a>
+        <span class="follow-sep2">|</span>
+        <span class="follow-mail">
+          Queries & Feedback:
+          <a href="mailto:worldofprofessionalsin@gmail.com">worldofprofessionalsin@gmail.com</a>
+        </span>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-left">
+        <h2>Choose an extractor</h2>
+        <p>
+          Run everything locally in your browser. No server upload. No data storage.
+          Export clean tables to Excel for filing and audit documentation.
+        </p>
+        <div class="chips">
+          <div class="chip">✔ 100% Client-side</div>
+          <div class="chip">✔ No uploads</div>
+          <div class="chip">✔ Multi-file support</div>
+          <div class="chip">✔ Audit-friendly</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-title">
+            <h3>📊 ESIC Challan Extractor</h3>
+            <p>Extract ESIC challan fields and export an Excel summary.</p>
+          </div>
+          <div class="badge">Ready</div>
+        </div>
+        <div class="card-actions">
+          <a class="btn" href="esic.html">Open Extractor →</a>
+          <a class="muted-link" href="esic.html">View</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-title">
+            <h3>🏦 EPF Combined Challan Extractor</h3>
+            <p>Extract EPF combined challan rows (A/C 01/02/10/21/22) with totals.</p>
+          </div>
+          <div class="badge">Ready</div>
+        </div>
+        <div class="card-actions">
+          <a class="btn" href="epf_combined.html">Open Extractor →</a>
+          <a class="muted-link" href="epf_combined.html">View</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-title">
+            <h3>🧾 EPF Payment Receipt Extractor</h3>
+            <p>Extract EPF payment receipt data (TRRN, wage month, amounts, bank, dates).</p>
+          </div>
+          <div class="badge">Ready</div>
+        </div>
+        <div class="card-actions">
+          <a class="btn" href="epf_payment_receipt.html">Open Extractor →</a>
+          <a class="muted-link" href="epf_payment_receipt.html">View</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-title">
+            <h3>🧾 Income Tax Payment Challan Extractor</h3>
+            <p>Extract Income Tax challan receipt fields and tax breakup (A–F/Total) and export to Excel.</p>
+          </div>
+          <div class="badge">Add</div>
+        </div>
+        <div class="card-actions">
+          <!-- change file name if your income tax html is different -->
+          <a class="btn" href="income_tax_challan.html">Open Extractor →</a>
+          <a class="muted-link" href="income_tax_challan.html">View</a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      <div class="mini">✔ 100% Client Side • ✔ No Uploads • ✔ Audit Friendly</div>
+      <div class="mini">© World of Professionals</div>
+    </div>
+
   </div>
-</div>
 </body>
 </html>
