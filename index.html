@@ -19,7 +19,6 @@
     --primary2:#1d4ed8;
 
     --ok:#22c55e;
-    --chip:#0b1220;
 
     --glass: rgba(255,255,255,.06);
     --glass2: rgba(255,255,255,.10);
@@ -59,19 +58,6 @@
     align-items:center;
     gap:12px;
     min-width: 260px;
-  }
-
-  .logo{
-    width:46px;height:46px;
-    border-radius:14px;
-    background: rgba(255,255,255,.95);
-    color:#0f172a;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:900;
-    box-shadow: 0 10px 25px rgba(0,0,0,.25);
-    user-select:none;
   }
 
   .brand-text{display:flex;flex-direction:column;line-height:1.1}
@@ -175,9 +161,65 @@
     color: rgba(255,255,255,.86);
   }
 
+  /* Readme launcher section (below hero, above grid) */
+  .readme-strip{
+    margin-top: 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.10);
+    box-shadow: 0 10px 30px rgba(0,0,0,.18);
+  }
+  .readme-strip .hint{
+    color: rgba(255,255,255,.78);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  /* Buttons */
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    text-decoration:none;
+    font-weight:950;
+    font-size:13px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    color:#fff;
+    background: linear-gradient(135deg, var(--primary), var(--primary2));
+    box-shadow: 0 10px 28px rgba(37,99,235,.25);
+    transition: transform .08s ease, opacity .08s ease;
+    border:none;
+    cursor:pointer;
+  }
+  .btn:hover{ transform: translateY(-1px); }
+  .btn:active{ transform: translateY(0); opacity:.92; }
+
+  .btn.secondary{
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.14);
+    box-shadow: 0 10px 25px rgba(0,0,0,.10);
+  }
+
+  .muted-link{
+    color: rgba(255,255,255,.72);
+    font-size:12px;
+    font-weight:800;
+    text-decoration:none;
+    border-bottom:1px dashed rgba(255,255,255,.28);
+    padding-bottom:2px;
+  }
+  .muted-link:hover{ color:#fff; border-bottom-color: rgba(255,255,255,.55); }
+
   /* Cards */
   .grid{
-    margin-top: 18px;
+    margin-top: 14px;
     display:grid;
     grid-template-columns: repeat(12, 1fr);
     gap: 14px;
@@ -246,33 +288,6 @@
     justify-content:space-between;
   }
 
-  .btn{
-    display:inline-flex;
-    align-items:center;
-    gap:10px;
-    text-decoration:none;
-    font-weight:950;
-    font-size:13px;
-    padding: 10px 12px;
-    border-radius: 14px;
-    color:#fff;
-    background: linear-gradient(135deg, var(--primary), var(--primary2));
-    box-shadow: 0 10px 28px rgba(37,99,235,.25);
-    transition: transform .08s ease, opacity .08s ease;
-  }
-  .btn:hover{ transform: translateY(-1px); }
-  .btn:active{ transform: translateY(0); opacity:.92; }
-
-  .muted-link{
-    color: rgba(255,255,255,.72);
-    font-size:12px;
-    font-weight:800;
-    text-decoration:none;
-    border-bottom:1px dashed rgba(255,255,255,.28);
-    padding-bottom:2px;
-  }
-  .muted-link:hover{ color:#fff; border-bottom-color: rgba(255,255,255,.55); }
-
   .footer{
     margin-top: 16px;
     padding: 14px 16px;
@@ -297,6 +312,90 @@
     .card{ grid-column: span 12; }
     .hero{ align-items:stretch; }
   }
+
+  /* ===== README MODAL (popup) ===== */
+  .modal{
+    position:fixed;
+    inset:0;
+    background: rgba(0,0,0,.52);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding: 18px;
+    z-index: 999;
+  }
+  .modal-card{
+    width: min(1050px, 96vw);
+    max-height: 86vh;
+    background:#fff;
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow: 0 30px 90px rgba(0,0,0,.42);
+    display:flex;
+    flex-direction:column;
+  }
+  .modal-head{
+    padding: 14px 16px;
+    background: linear-gradient(180deg, #0f172a 0%, #0b1220 100%);
+    color:#fff;
+    font-weight: 950;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .modal-head .title{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    line-height:1.1;
+  }
+  .modal-head .title small{
+    font-weight:800;
+    opacity:.8;
+    font-size:12px;
+  }
+  .modal-body{
+    padding: 14px 16px;
+    overflow:auto;
+    color:#0f172a;
+  }
+  .modal-body h2{
+    font-size:18px;
+    margin: 6px 0 10px;
+  }
+  .modal-body h3{
+    font-size:14px;
+    margin: 14px 0 6px;
+  }
+  .modal-body p, .modal-body li{
+    font-size:13px;
+    line-height: 1.55;
+    color:#0f172a;
+  }
+  .modal-body ul{ margin: 6px 0 6px 18px; }
+  .modal-body hr{
+    border:none;
+    border-top:1px solid #e5e7eb;
+    margin: 14px 0;
+  }
+  .modal-body .note{
+    background:#f8fafc;
+    border-left:4px solid #2563eb;
+    padding:10px 12px;
+    border-radius:10px;
+    margin: 10px 0;
+    color:#0f172a;
+    font-size:13px;
+  }
+  .modal-body img{
+    max-width:100%;
+    height:auto;
+    display:block;
+    margin:10px 0;
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+  }
 </style>
 </head>
 
@@ -305,8 +404,8 @@
 
     <div class="topbar">
       <div class="brand">
-        <!-- If you want your logo image: replace this div with <img src="wop-logo.png" ...> -->
-        <img src="./wop-logo.png" alt="WOP Logo" style="width:46px;height:46px;border-radius:14px;background:#fff;padding:6px;object-fit:contain;box-shadow:0 10px 25px rgba(0,0,0,.25);" />
+        <img src="./wop-logo.png" alt="WOP Logo"
+             style="width:46px;height:46px;border-radius:14px;background:#fff;padding:6px;object-fit:contain;box-shadow:0 10px 25px rgba(0,0,0,.25);" />
         <div class="brand-text">
           <h1>WOP Statutory Challan Xtract</h1>
           <p>Client-side extractors • Excel-ready outputs • Audit-friendly</p>
@@ -340,6 +439,12 @@
           <div class="chip">✔ Audit-friendly</div>
         </div>
       </div>
+    </div>
+
+    <!-- ✅ README button (below hero, above extractor cards) -->
+    <div class="readme-strip">
+      <div class="hint">📘 Readme (Purpose, Cautions & Previews of formatted files) - Check the instruction before using any extractor to understand its functionality >>>>>>>>>></div>
+      <button class="btn secondary" type="button" onclick="openReadme()">📘 Readme / User Guide</button>
     </div>
 
     <div class="grid">
@@ -395,7 +500,6 @@
           <div class="badge">Add</div>
         </div>
         <div class="card-actions">
-          <!-- change file name if your income tax html is different -->
           <a class="btn" href="income_tax_challan.html">Open Extractor →</a>
           <a class="muted-link" href="income_tax_challan.html">View</a>
         </div>
@@ -409,5 +513,152 @@
     </div>
 
   </div>
+
+  <!-- ===== README POPUP MODAL ===== -->
+  <div class="modal" id="readmeModal" onclick="modalBackdropClose(event)">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="readmeTitle">
+      <div class="modal-head">
+        <div class="title">
+          <div id="readmeTitle">📘 WOP Readme / User Guide</div>
+          <small>Purpose • Cautions • Previews</small>
+        </div>
+        <button class="btn" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);box-shadow:none;"
+                type="button" onclick="closeReadme()">✖ Close</button>
+      </div>
+
+      <div class="modal-body">
+        <h2>WOP Statutory Challan Xtract</h2>
+        <p>
+          A lightweight, <b>100% client-side</b> toolset to extract key fields from statutory challans/receipts and export
+          <b>Excel-ready</b> summaries. No server processing. No data storage. Everything runs in your browser.
+        </p>
+        <div class="note">
+          ✅ Especially useful during <b>audits</b> for quick <b>reconciliations</b>, cross-checking, and documentation.
+        </div>
+
+        <hr>
+
+        <h3>✅ Purpose of Each Extractor (What it’s for)</h3>
+
+        <h3>1) ESIC Challan Extractor (<code>esic.html</code>)</h3>
+        <p><b>Purpose</b></p>
+        <ul>
+          <li>Build a <b>summary register</b> of ESIC challans in minutes.</li>
+          <li>Useful for monthly ESIC payment reconciliation and audit working papers.</li>
+        </ul>
+        <p><b>Preview</b></p>
+        <img alt="ESIC Preview" src="https://github.com/user-attachments/assets/32920109-0ce1-4c28-8abb-fb6863b19433" />
+
+        <hr>
+
+        <h3>2) EPF Combined Challan Extractor (<code>epf_combined.html</code>)</h3>
+        <p><b>Purpose</b></p>
+        <ul>
+          <li>Extract EPF combined challan breakup for A/C <b>01, 02, 10, 21 & 22</b>.</li>
+          <li>Useful for statutory payment reconciliation and contribution-head validation.</li>
+          <li>Power Query Excel can be used for disclosure checks (email if interested).</li>
+        </ul>
+        <div class="note">
+          👉 One PDF usually generates <b>3 rows</b>: Administration Charges, Employer Share, Employee Share.
+        </div>
+        <p><b>Preview</b></p>
+        <img alt="EPF Combined Preview" src="https://github.com/user-attachments/assets/53cd8965-797b-459b-9839-9ef3f32659fa" />
+
+        <hr>
+
+        <h3>3) EPF Payment Receipt Extractor (<code>epf_payment_receipt.html</code>)</h3>
+        <p><b>Purpose</b></p>
+        <ul>
+          <li>Create a <b>payment confirmation register</b> (TRRN, bank, CRN, dates, amounts).</li>
+          <li>Useful for audit evidence, tax audits, and tracking payment/confirmation dates.</li>
+        </ul>
+        <p><b>Preview</b></p>
+        <img alt="EPF Payment Receipt Preview" src="https://github.com/user-attachments/assets/c0e76951-be2f-4dee-a7ac-b31876078b06" />
+
+        <hr>
+
+        <h3>4) Income Tax Payment Challan Extractor (<code>income_tax_challan.html</code>)</h3>
+        <p><b>Purpose</b></p>
+        <ul>
+          <li>Extract challan receipt fields + tax breakup into Excel.</li>
+          <li>Useful for challan reconciliation, grouping verification, tax payment summaries, and tax audits.</li>
+        </ul>
+        <p><b>Preview</b></p>
+        <img alt="Income Tax Challan Preview" src="https://github.com/user-attachments/assets/3cd298b9-5cde-45cf-9d48-fe8b9a8312a2" />
+
+        <hr>
+
+        <h3>⚠️ Cautions & User Responsibilities (Important)</h3>
+        <p>
+          Because this tool is client-side and relies on PDF text extraction, users must verify accuracy before using it
+          for compliance/audit submission.
+        </p>
+
+        <h3>1) Always validate key fields</h3>
+        <ul>
+          <li>Challan / Transaction / TRRN / CRN numbers</li>
+          <li>Total Amount (₹)</li>
+          <li>Dates (Generated / Submitted / Payment / Confirmation)</li>
+          <li>Month / Period</li>
+        </ul>
+
+        <h3>2) PDFs may vary by layout</h3>
+        <ul>
+          <li>If a PDF is <b>scanned image</b> (no selectable text), extraction may be blank/partial.</li>
+          <li>If the portal layout changes, labels/regex may need tuning.</li>
+        </ul>
+        <div class="note">
+          👉 Treat the Excel output as a <b>draft working paper</b>. Manually correct where needed.
+        </div>
+
+        <h3>3) Do not treat output as legal proof by itself</h3>
+        <ul>
+          <li>Keep original PDFs as source evidence.</li>
+          <li>Use Excel exports as audit working papers / registers.</li>
+        </ul>
+
+        <h3>4) Data privacy caution (user-side)</h3>
+        <ul>
+          <li>No server upload happens, but use trusted devices only.</li>
+          <li>Avoid shared/public systems.</li>
+          <li>Don’t leave exported files on unsecured machines.</li>
+        </ul>
+
+        <hr>
+
+        <h3>🧾 Output & Audit Use</h3>
+        <p>
+          This tool supports faster reconciliation, audit working paper preparation, and consolidated registers for statutory payments.
+          Final responsibility for correctness remains with the user.
+        </p>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const modal = document.getElementById("readmeModal");
+
+  function openReadme(){
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeReadme(){
+    modal.style.display = "none";
+    document.body.style.overflow = "";
+  }
+
+  // close when clicking outside the modal-card
+  function modalBackdropClose(e){
+    if(e.target === modal) closeReadme();
+  }
+
+  // ESC to close
+  document.addEventListener("keydown", (e)=>{
+    if(e.key === "Escape" && modal.style.display === "flex"){
+      closeReadme();
+    }
+  });
+</script>
 </body>
 </html>
