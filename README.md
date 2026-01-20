@@ -17,6 +17,7 @@ No server processing. No data storage. Everything runs in your browser.
   - Audit working papers
  
 **File Preview**
+
 <img width="1136" height="691" alt="Screenshot 2026-01-20 060855" src="https://github.com/user-attachments/assets/32920109-0ce1-4c28-8abb-fb6863b19433" />
 
 
@@ -34,6 +35,7 @@ No server processing. No data storage. Everything runs in your browser.
 > Administration Charges, Employer Share, Employee Share
 
 **File Preview**
+
 <img width="870" height="130" alt="Screenshot 2026-01-20 060800" src="https://github.com/user-attachments/assets/53cd8965-797b-459b-9839-9ef3f32659fa" />
 
 ---
@@ -47,6 +49,7 @@ No server processing. No data storage. Everything runs in your browser.
   - Payment date/confirmation date tracking
 
 **File Preview**
+
 <img width="1111" height="269" alt="Screenshot 2026-01-20 060750" src="https://github.com/user-attachments/assets/c0e76951-be2f-4dee-a7ac-b31876078b06" />
 
 ---
@@ -60,6 +63,7 @@ No server processing. No data storage. Everything runs in your browser.
   - Breakup reconciliation (Tax/Surcharge/Cess/Interest/Penalty/Others)
 
 **File Preview**
+
 <img width="703" height="111" alt="Screenshot 2026-01-20 060719" src="https://github.com/user-attachments/assets/3cd298b9-5cde-45cf-9d48-fe8b9a8312a2" />
 
 ---
