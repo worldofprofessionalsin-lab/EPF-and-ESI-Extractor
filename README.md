@@ -14,7 +14,11 @@ No server processing. No data storage. Everything runs in your browser.
 - Build a **summary register** of ESIC challans in minutes.
 - Useful for:
   - Monthly ESIC payment reconciliation
-  - Audit working papers 
+  - Audit working papers
+ 
+**File Preview**
+<img width="1136" height="691" alt="Screenshot 2026-01-20 060855" src="https://github.com/user-attachments/assets/62933146-14fd-4b07-b327-30eac8d051ed" />
+
 ---
 
 ### 2) EPF Combined Challan Extractor (`epf_combined.html`)
@@ -28,6 +32,9 @@ No server processing. No data storage. Everything runs in your browser.
 >  One PDF usually generates **3 rows**:
 > Administration Charges, Employer Share, Employee Share
 
+**File Preview**
+<img width="870" height="130" alt="Screenshot 2026-01-20 060800" src="https://github.com/user-attachments/assets/53cd8965-797b-459b-9839-9ef3f32659fa" />
+
 ---
 
 ### 3) EPF Payment Receipt Extractor (`epf_payment_receipt.html`)
@@ -38,6 +45,9 @@ No server processing. No data storage. Everything runs in your browser.
   - Tax Audits
   - Payment date/confirmation date tracking
 
+**File Preview**
+<img width="1111" height="269" alt="Screenshot 2026-01-20 060750" src="https://github.com/user-attachments/assets/c0e76951-be2f-4dee-a7ac-b31876078b06" />
+
 ---
 
 ### 4) Income Tax Payment Challan Extractor (`income_tax_challan.html`)
@@ -47,6 +57,9 @@ No server processing. No data storage. Everything runs in your browser.
   - TDS Challan reconciliation, Grouping verification, Tax Payment summary and purpose of payments
   - Tax Audits
   - Breakup reconciliation (Tax/Surcharge/Cess/Interest/Penalty/Others)
+
+**File Preview**
+<img width="703" height="111" alt="Screenshot 2026-01-20 060719" src="https://github.com/user-attachments/assets/ca139b85-3ef7-4664-baf7-eb5ddca0bb71" />
 
 ---
 
