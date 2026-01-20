@@ -1,147 +1,371 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ESIC Challan Data Extractor</title>
+<meta charset="UTF-8" />
+<title>WOP Statutory Challan Xtract</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <!-- PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc =
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 </script>
 
-<!-- SheetJS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- ✅ SheetJS (Styled) so Calibri 11 can persist if you add styles later -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.full.min.js"></script>
 
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:"Segoe UI",Arial,sans-serif;
-  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-  min-height:100vh;padding:20px
-}
-h1{text-align:center;color:#fff;margin-bottom:25px}
-.container{
-  max-width:1400px;margin:auto;background:#fff;
-  padding:25px;border-radius:12px;
-  box-shadow:0 10px 40px rgba(0,0,0,.2)
-}
-.controls{
-  display:flex;gap:12px;flex-wrap:wrap;
-  align-items:center;margin-bottom:20px
-}
-.file-input-wrapper input{display:none}
-.file-input-label{
-  padding:10px 20px;background:#4a5568;color:#fff;
-  border-radius:6px;cursor:pointer;font-weight:600
-}
-button{
-  padding:10px 22px;border:none;border-radius:6px;
-  cursor:pointer;font-weight:600
-}
-button.primary{background:#1f6fb2;color:#fff}
-button.success{background:#2e8b57;color:#fff}
-button.danger{background:#dc3545;color:#fff}
-button:disabled{background:#9aa5b1;cursor:not-allowed}
-.stats{display:none;gap:15px;margin-bottom:20px}
-.stat-card{
-  flex:1;min-width:150px;
-  background:linear-gradient(135deg,#667eea,#764ba2);
-  color:#fff;padding:15px;border-radius:8px;text-align:center
-}
-.table-wrapper{overflow-x:auto;border:1px solid #e2e8f0}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{border:1px solid #e2e8f0;padding:10px}
-th{
-  background:linear-gradient(135deg,#667eea,#764ba2);
-  color:#fff;text-align:center
-}
-td.numeric{text-align:right;font-family:monospace}
-.empty-state{text-align:center;color:#94a3b8}
-.note{
-  margin-top:20px;padding:15px;background:#f8fafc;
-  border-left:4px solid #667eea;font-size:13px
-}
+  :root{
+    --bg1:#0b1220;
+    --bg2:#0f1b33;
+    --card:#ffffff;
+    --text:#0f172a;
+    --muted:#64748b;
+    --border:#e5e7eb;
+    --shadow:0 18px 55px rgba(2,6,23,.25);
+
+    --primary:#2563eb;
+    --primary2:#1d4ed8;
+    --success:#16a34a;
+    --danger:#dc2626;
+
+    --theadText:#ffffff;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: var(--text);
+    min-height:100vh;
+    background:
+      radial-gradient(1200px 600px at 15% 10%, rgba(37,99,235,.25), transparent 55%),
+      radial-gradient(900px 500px at 85% 0%, rgba(16,185,129,.18), transparent 55%),
+      linear-gradient(160deg, var(--bg1) 0%, var(--bg2) 100%);
+    padding: 28px 18px;
+  }
+
+  .shell{ max-width:1700px; margin:0 auto; }
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:16px 18px;
+    border-radius:16px;
+    background: rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.08);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 35px rgba(0,0,0,.20);
+    margin-bottom: 16px;
+    flex-wrap:wrap;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width: 260px;
+  }
+
+  .brand img{
+    width:46px;height:46px;
+    border-radius:12px;
+    background:#fff;
+    padding:6px;
+    box-shadow: 0 10px 25px rgba(0,0,0,.25);
+    object-fit:contain;
+  }
+
+  .brand-title{ display:flex; flex-direction:column; line-height:1.1; }
+  .brand-title h1{
+    color:#fff;
+    font-size:18px;
+    font-weight:900;
+    letter-spacing:.2px;
+  }
+  .brand-title p{
+    color: rgba(255,255,255,.72);
+    font-size:12px;
+    margin-top:4px;
+  }
+
+  .follow-bar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  .follow-label{
+    color: rgba(255,255,255,.75);
+    font-size:12px;
+    font-weight:800;
+  }
+  .social-btn{
+    text-decoration:none;
+    font-weight:900;
+    font-size:12px;
+    padding:8px 12px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.16);
+    background: rgba(255,255,255,.08);
+    color:#fff;
+    transition: transform .08s ease, background .08s ease, opacity .08s ease;
+    box-shadow: 0 10px 22px rgba(0,0,0,.15);
+  }
+  .social-btn:hover{ background: rgba(255,255,255,.14); transform: translateY(-1px); }
+  .social-btn:active{ transform: translateY(0); opacity:.92; }
+  .social-btn.li{ border-color: rgba(10,102,194,.45); }
+  .social-btn.wa{ border-color: rgba(37,211,102,.45); }
+  .social-btn.ig{ border-color: rgba(225,48,108,.45); }
+
+  .follow-sep2{
+    color: rgba(255,255,255,.30);
+    font-weight:900;
+    margin:0 2px;
+  }
+  .follow-mail{
+    color: rgba(255,255,255,.75);
+    font-size:12px;
+    font-weight:800;
+  }
+  .follow-mail a{
+    color:#93c5fd;
+    text-decoration:none;
+    font-weight:900;
+  }
+  .follow-mail a:hover{ text-decoration:underline; }
+
+  .card{
+    background: var(--card);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(2,6,23,.08);
+    overflow:hidden;
+  }
+
+  .card-head{
+    padding:16px 18px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    flex-wrap:wrap;
+  }
+
+  .card-head .left{ display:flex; flex-direction:column; gap:4px; }
+  .card-head .left .title{ font-size:14px; font-weight:900; }
+  .card-head .left .sub{ font-size:12px; color: var(--muted); }
+
+  .controls{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:flex-end;
+  }
+
+  .file{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:#fff;
+    min-width: 320px;
+  }
+  .file span{ color: var(--muted); font-size:12px; white-space:nowrap; }
+  input[type="file"]{ width:100%; font-size:12px; }
+
+  button{
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:900;
+    padding:10px 14px;
+    display:inline-flex;
+    gap:8px;
+    align-items:center;
+    box-shadow: 0 8px 20px rgba(2,6,23,.10);
+    transition: transform .08s ease, box-shadow .08s ease, opacity .08s ease;
+  }
+  button:hover{ transform: translateY(-1px); box-shadow: 0 12px 26px rgba(2,6,23,.14); }
+  button:active{ transform: translateY(0); opacity:.92; }
+  button:disabled{ opacity:.55; cursor:not-allowed; transform:none; box-shadow:none; }
+
+  button.primary{ background: linear-gradient(135deg, var(--primary), var(--primary2)); color:#fff; }
+  button.success{ background: linear-gradient(135deg, #16a34a, #15803d); color:#fff; }
+  button.danger{ background: linear-gradient(135deg, #ef4444, var(--danger)); color:#fff; }
+
+  .stats{
+    margin: 12px 18px 0;
+    background: linear-gradient(180deg, #0f172a 0%, #0b1220 100%);
+    color:#fff;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display:none;
+    justify-content: space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    border:1px solid rgba(255,255,255,.06);
+  }
+  .stats .pill{
+    background: rgba(255,255,255,.10);
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 12px;
+  }
+
+  .table-wrapper{
+    overflow:auto;
+    max-height: calc(100vh - 290px);
+  }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th, td{ border:1px solid #eef2f7; padding:10px; vertical-align:top; }
+
+  thead th{
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: linear-gradient(180deg, #0f172a 0%, #0b1220 100%);
+    color: var(--theadText);
+    text-align:center;
+    font-weight:900;
+    white-space:nowrap;
+    border-color: rgba(255,255,255,.06);
+  }
+
+  tbody tr:nth-child(even){ background:#fafcff; }
+  tbody tr:hover{ background:#f3f7ff; }
+
+  td.numeric{
+    text-align:right;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    white-space: nowrap;
+  }
+  td.wrap{ white-space: normal; word-break: break-word; }
+  .empty-state{ text-align:center; color:#94a3b8; font-weight:800; }
+
+  .note{
+    margin: 14px 18px 18px;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border-left:4px solid #2563eb;
+    font-size: 13px;
+    border-radius: 10px;
+    color:#334155;
+  }
 </style>
 </head>
 
 <body>
+  <div class="shell">
 
-<h1>📊 ESIC Challan Data Extractor</h1>
+    <div class="topbar">
+      <div class="brand">
+        <!-- Put your logo file in same folder and name it wop-logo.png -->
+        <img src="wop-logo.png" alt="WOP Logo" />
+        <div class="brand-title">
+          <h1>WOP Statutory Challan Xtract</h1>
+          <p>Extract ESIC challans into Excel-ready tables</p>
+        </div>
+      </div>
 
-<div class="container">
-
-  <div class="controls">
-    <div class="file-input-wrapper">
-      <input type="file" id="fileInput" multiple accept=".pdf,.html,.htm">
-      <label for="fileInput" class="file-input-label">📁 Choose Files</label>
+      <div class="follow-bar">
+        <span class="follow-label">Follow us:</span>
+        <a class="social-btn li" href="https://www.linkedin.com/in/thangaraju-s/" target="_blank" rel="noopener">LinkedIn</a>
+        <a class="social-btn wa" href="https://whatsapp.com/channel/0029VaeUJacEgGfE1V9taa2u" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="social-btn ig" href="https://www.instagram.com/world_of_professionals/" target="_blank" rel="noopener">Instagram</a>
+        <span class="follow-sep2">|</span>
+        <span class="follow-mail">Queries & Feedback:
+          <a href="mailto:worldofprofessionalsin@gmail.com">worldofprofessionalsin@gmail.com</a>
+        </span>
+      </div>
     </div>
-    <span id="fileCount">No files selected</span>
-    <button class="primary" id="extractBtn">🔍 Extract Data</button>
-    <button class="success" id="exportBtn" disabled>📥 Export to Excel</button>
-    <button class="danger" id="clearBtn" disabled>🗑️ Clear</button>
-  </div>
 
-  <div class="stats" id="stats">
-    <div class="stat-card">
-      <div>Total Records</div>
-      <div id="totalRecords">0</div>
+    <div class="card">
+      <div class="card-head">
+        <div class="left">
+          <div class="title">Upload and Extract</div>
+          <div class="sub">Select multiple ESIC challan PDFs and click Extract.</div>
+        </div>
+
+        <div class="controls">
+          <div class="file">
+            <span>Choose Files</span>
+            <input type="file" id="fileInput" multiple accept=".pdf,.html,.htm" />
+          </div>
+
+          <span id="fileCount" style="font-weight:900;color:#334155;">No files selected</span>
+
+          <button class="primary" id="extractBtn">🔍 Extract Data</button>
+          <button class="success" id="exportBtn" disabled>📥 Export</button>
+          <button class="danger" id="clearBtn" disabled>🧹 Clear</button>
+        </div>
+      </div>
+
+      <div class="stats" id="stats">
+        <div class="pill">Total Records: <span id="totalRecords">0</span></div>
+        <div class="pill">Total Amount (₹): <span id="totalAmount">0</span></div>
+      </div>
+
+      <div class="table-wrapper">
+        <table id="resultTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Employer Code</th>
+              <th>Employer Name</th>
+              <th>Contribution Period</th>
+              <th>Challan Number</th>
+              <th>Created Date</th>
+              <th>Submitted Date</th>
+              <th>Transaction No</th>
+              <th>Total Amount (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="empty-state">
+              <td colspan="9">No data yet. Upload ESIC challans.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        ✔ Employer Name auto-cleaned<br />
+        ✔ Supports PDF challans<br />
+        ✔ Excel export is fully client-side browser
+      </div>
     </div>
-    <div class="stat-card">
-      <div>Total Amount (₹)</div>
-      <div id="totalAmount">0</div>
-    </div>
-  </div>
 
-  <div class="table-wrapper">
-    <table id="resultTable">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Employer Code</th>
-          <th>Employer Name</th>
-          <th>Contribution Period</th>
-          <th>Challan Number</th>
-          <th>Created Date</th>
-          <th>Submitted Date</th>
-          <th>Transaction No</th>
-          <th>Total Amount (₹)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="empty-state">
-          <td colspan="9">No data yet. Upload ESIC challans.</td>
-        </tr>
-      </tbody>
-    </table>
   </div>
-
-  <div class="note">
-    ✔ Employer Name auto-cleaned<br>
-    ✔ Supports PDF & HTML challans<br>
-    ✔ Excel export is fully client-side
-  </div>
-
-</div>
 
 <script>
 /* ================= Helpers ================= */
 
-function normalize(t){return t.replace(/\s+/g," ").replace(/₹/g,"").trim()}
-function extract(t,r){const m=t.match(r);return m?m[1].trim():""}
+function normalize(t){ return (t||"").replace(/\s+/g," ").replace(/₹/g,"").trim(); }
+function extract(t,r){ const m=(t||"").match(r); return m?m[1].trim():""; }
 function cleanEmployerName(n){
-  return n.replace(/Challan.*$/i,"")
-          .replace(/Contribution.*$/i,"")
-          .replace(/Period.*$/i,"")
-          .replace(/Number.*$/i,"")
-          .trim()
+  return (n||"")
+    .replace(/Challan.*$/i,"")
+    .replace(/Contribution.*$/i,"")
+    .replace(/Period.*$/i,"")
+    .replace(/Number.*$/i,"")
+    .trim();
 }
 function parseAmount(a){
-  if(!a)return 0;
-  const n=parseFloat(a.replace(/,/g,""));
-  return isNaN(n)?0:n
+  if(!a) return 0;
+  const n=parseFloat(String(a).replace(/,/g,""));
+  return isNaN(n)?0:n;
 }
 
 /* ================= Parser ================= */
@@ -175,10 +399,11 @@ async function readPDF(f){
   for(let i=1;i<=pdf.numPages;i++){
     const p=await pdf.getPage(i);
     const c=await p.getTextContent();
-    t+=" "+c.items.map(x=>x.str).join(" ");
+    t += " " + c.items.map(x=>x.str).join(" ");
   }
   return t;
 }
+
 async function readHTML(f){
   const h=await f.text();
   const d=document.createElement("div");
@@ -193,6 +418,12 @@ let extractedData=[];
 function renderTable(){
   const tb=document.querySelector("#resultTable tbody");
   tb.innerHTML="";
+
+  if(!extractedData.length){
+    tb.innerHTML = `<tr class="empty-state"><td colspan="9">No data yet. Upload ESIC challans.</td></tr>`;
+    return;
+  }
+
   extractedData.forEach((d,i)=>{
     const tr=document.createElement("tr");
     [
@@ -203,7 +434,8 @@ function renderTable(){
     ].forEach((v,idx)=>{
       const td=document.createElement("td");
       td.textContent=v||"";
-      if(idx===8)td.className="numeric";
+      if(idx===8) td.className="numeric";
+      if(idx===2) td.classList.add("wrap");
       tr.appendChild(td);
     });
     tb.appendChild(tr);
@@ -211,61 +443,94 @@ function renderTable(){
 }
 
 function updateStats(){
-  document.getElementById("stats").style.display=
-    extractedData.length?"flex":"none";
-  document.getElementById("totalRecords").textContent=extractedData.length;
-  document.getElementById("totalAmount").textContent=
-    extractedData.reduce((s,d)=>s+parseAmount(d.totalAmount),0)
-      .toLocaleString("en-IN",{minimumFractionDigits:2});
+  const statsEl=document.getElementById("stats");
+  statsEl.style.display = extractedData.length ? "flex" : "none";
+  document.getElementById("totalRecords").textContent = extractedData.length;
+
+  const sum = extractedData.reduce((s,d)=>s+parseAmount(d.totalAmount),0);
+  document.getElementById("totalAmount").textContent =
+    sum.toLocaleString("en-IN",{minimumFractionDigits:2, maximumFractionDigits:2});
 }
 
 /* ================= Events ================= */
 
 fileInput.onchange=e=>{
-  fileCount.textContent=e.target.files.length
-    ?`${e.target.files.length} file(s) selected`
-    :"No files selected";
+  fileCount.textContent = e.target.files.length
+    ? `${e.target.files.length} file(s) selected`
+    : "No files selected";
 };
 
 extractBtn.onclick=async()=>{
-  const files=fileInput.files;
-  if(!files.length){alert("Select files");return}
+  const files=[...fileInput.files];
+  if(!files.length){ alert("Select files"); return; }
+
   extractedData=[];
   for(const f of files){
-    const t=f.type==="application/pdf"?await readPDF(f):await readHTML(f);
+    const t = f.type === "application/pdf" ? await readPDF(f) : await readHTML(f);
     extractedData.push(parseESICText(t));
   }
-  renderTable();updateStats();
-  exportBtn.disabled=false;clearBtn.disabled=false;
+
+  renderTable();
+  updateStats();
+  exportBtn.disabled = !extractedData.length;
+  clearBtn.disabled = false;
 };
 
 exportBtn.onclick=()=>{
+  if(!extractedData.length) return alert("No data to export");
+
   const data=[[
     "#","Employer Code","Employer Name","Contribution Period",
     "Challan Number","Created Date","Submitted Date",
     "Transaction Number","Total Amount"
   ]];
+
   extractedData.forEach((d,i)=>{
     data.push([
-      i+1,d.employerCode,d.employerName,d.contributionPeriod,
-      d.challanNumber,d.challanCreatedDate,
-      d.challanSubmittedDate,d.transactionNumber,
+      i+1,
+      d.employerCode,
+      d.employerName,
+      d.contributionPeriod,
+      d.challanNumber,
+      d.challanCreatedDate,
+      d.challanSubmittedDate,
+      d.transactionNumber,
       parseAmount(d.totalAmount)
     ]);
   });
+
   const ws=XLSX.utils.aoa_to_sheet(data);
+
+  // Optional: set column widths for neat export
+  ws["!cols"] = [
+    {wch:5},{wch:18},{wch:40},{wch:18},{wch:16},{wch:14},{wch:14},{wch:18},{wch:14}
+  ];
+
+  // Optional: apply Calibri 11 to all cells (requires xlsx-js-style)
+  const range = XLSX.utils.decode_range(ws["!ref"]);
+  for(let R=range.s.r; R<=range.e.r; ++R){
+    for(let C=range.s.c; C<=range.e.c; ++C){
+      const addr = XLSX.utils.encode_cell({r:R,c:C});
+      if(!ws[addr]) continue;
+      ws[addr].s = ws[addr].s || {};
+      ws[addr].s.font = { name:"Calibri", sz:11 };
+    }
+  }
+
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,"ESIC");
-  XLSX.writeFile(wb,"ESIC_Challan_Summary.xlsx");
+  XLSX.writeFile(wb,"ESIC_Challan_Summary.xlsx", { cellStyles:true });
 };
 
 clearBtn.onclick=()=>{
   extractedData=[];
-  document.querySelector("#resultTable tbody").innerHTML=
-    `<tr class="empty-state"><td colspan="9">No data yet.</td></tr>`;
-  stats.style.display="none";
-  exportBtn.disabled=true;clearBtn.disabled=true;
-  fileInput.value="";fileCount.textContent="No files selected";
+  document.querySelector("#resultTable tbody").innerHTML =
+    `<tr class="empty-state"><td colspan="9">No data yet. Upload ESIC challans.</td></tr>`;
+  document.getElementById("stats").style.display="none";
+  exportBtn.disabled=true;
+  clearBtn.disabled=true;
+  fileInput.value="";
+  fileCount.textContent="No files selected";
 };
 </script>
 
