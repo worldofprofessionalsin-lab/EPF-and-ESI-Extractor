@@ -7,110 +7,85 @@ No server processing. No data storage. Everything runs in your browser.
 
 ---
 
-## ✅ Supported Extractors
+## ✅ Purpose of Each Extractor (What it’s for)
 
 ### 1) ESIC Challan Extractor (`esic.html`)
-Extracts key challan details from ESIC challan PDFs/HTML and exports a single summary sheet.
-
-**Fields extracted**
-- Employer Code  
-- Employer Name  
-- Contribution Period  
-- Challan Number  
-- Created Date  
-- Submitted Date  
-- Transaction No  
-- Total Amount (₹)  
-
-**UI highlights**
-- Multi-file upload  
-- Summary pills: **Total Records** and **Total Amount (₹)**  
-- Export to Excel  
-
+**Purpose**
+- Build a **summary register** of ESIC challans in minutes.
+- Useful for:
+  - Monthly ESIC payment reconciliation
+  - Audit working papers 
 ---
 
 ### 2) EPF Combined Challan Extractor (`epf_combined.html`)
-Extracts tabular rows from EPF Combined Challan of A/C **01, 02, 10, 21 & 22** and totals.
+**Purpose**
+- Extract the EPF **combined challan breakup** for A/C **01, 02, 10, 21 & 22**.
+- Useful for:
+  - Statutory payment reconciliation
+  - Cross-checking totals by contribution heads
+  - Power Query Excel has also created for this to check the disclosures are made properly. Kindly email, if intereseted 
 
-**Output structure**
-- One PDF typically produces **3 rows** (Administration Charges, Employer Share, Employee Share)
-- Columns:
-  - Name  
-  - Month / Year  
-  - Particulars  
-  - A/C.01, A/C.02, A/C.10, A/C.21, A/C.22  
-  - Total  
-  - Date of Generation  
-  - File Name  
-
-**UI highlights**
-- Multi-file upload  
-- Summary pills: **Total Records** and **Total Amount (₹)** (sum of “Total” column)  
-- Export to Excel *(Calibri 11 supported when using xlsx-js-style)*  
-- Debug text viewer *(optional)* for troubleshooting PDF parsing  
+>  One PDF usually generates **3 rows**:
+> Administration Charges, Employer Share, Employee Share
 
 ---
 
 ### 3) EPF Payment Receipt Extractor (`epf_payment_receipt.html`)
-Extracts payment receipt-level details such as TRRN, wage month, amounts, bank and payment dates.
-
-**Fields extracted**
-- TRRN No  
-- Challan Status  
-- Challan Generated On  
-- Establishment ID  
-- Establishment Name  
-- Challan Type  
-- Total Members  
-- Wage Month  
-- Total Amount  
-- Account-1 Amount  
-- Account-2 Amount  
-- Account-10 Amount  
-- Account-21 Amount  
-- Account-22 Amount  
-- Payment Confirmation Bank  
-- CRN  
-- Payment Date  
-- Payment Confirmation Date  
-- File Name  
-
-**UI highlights**
-- Multi-file upload  
-- Export to Excel  
-
-> Note: Amounts are extracted using text-position line reconstruction (PDF.js).  
-> If a particular PDF layout differs, a few labels may require regex tuning.
+**Purpose**
+- Create a **payment confirmation register** from EPF receipts (TRRN, bank, CRN, dates, amounts).
+- Useful for:
+  - Audit evidence of payment confirmation
+  - Tax Audits
+  - Payment date/confirmation date tracking
 
 ---
 
 ### 4) Income Tax Payment Challan Extractor (`income_tax_challan.html`)
-Extracts fields from the Income Tax Department challan receipt and tax breakup.
-
-**Important notes**
-- **ITNS No is NOT included** (removed as requested).  
-- Tax breakup may include **“Others (F)”** in some receipts.  
-  - If present: capture it  
-  - If not present: keep blank  
-- Total/amounts are parsed from the **“Tax Breakup Details (Amount in ₹)”** section.
-
-**Expected Tax Breakup columns**
-- Tax (A)  
-- Surcharge (B)  
-- Cess (C)  
-- Interest (D)  
-- Penalty (E)  
-- Others (F) *(optional)*  
-- Total (A+B+C+D+E+F)
-
-**UI highlights**
-- Multi-file upload  
-- Summary pills: **Total Records** and **Total Amount (₹)** (grand total across files)  
-- Export to Excel  
+**Purpose**
+- Extract challan receipt fields + tax breakup into Excel.
+- Useful for:
+  - TDS Challan reconciliation, Grouping verification, Tax Payment summary and purpose of payments
+  - Tax Audits
+  - Breakup reconciliation (Tax/Surcharge/Cess/Interest/Penalty/Others)
 
 ---
 
-## 🧭 Project Structure (Recommended)
+## ⚠️ Cautions & User Responsibilities (Important)
 
-Place all HTML files in the same folder (repo root or `/docs` if using GitHub Pages):
+Because this tool is **client-side** and relies on **PDF text extraction**, users must verify accuracy before using it for compliance/audit submission.
 
+### 1) Always validate key fields (Preview files are attached this tools works only for those files)
+After export, **cross-check at least these** against the original PDF:
+- Challan / Transaction / TRRN / CRN numbers  
+- Total Amount (₹)  
+- Dates (Generated / Submitted / Payment / Confirmation)  
+- Month / Period  
+
+### 2) PDFs may vary by layout
+Some challans are scanned, image-based, or have different formatting.
+- If a PDF is **scanned image** (no selectable text), extraction may return blank or partial data.
+- If government portal layouts change, some labels/regex may need updates.
+
+👉 In such cases, treat export as a **draft** and manually correct amounts.
+
+### 4) Do not treat output as a legal proof by itself
+The Excel output is only a **working summary**.
+For audits/statutory compliance, always keep:
+- Original PDF challans/receipts (as source evidence)
+- Exported Excel (as working paper)
+
+### 5) Data privacy caution (user-side)
+No server upload happens, but user must still ensure:
+- Use only trusted devices/browsers.
+- Avoid using in shared/public systems.
+- Do not leave exported files on unsecured machines.
+
+---
+
+## 🧾 Output & Audit Use
+This tool is intended to support:
+- Faster reconciliation
+- Audit working paper preparation
+- Consolidated registers for statutory payments
+
+Final responsibility for correctness remains with the user.
