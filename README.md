@@ -17,7 +17,8 @@ No server processing. No data storage. Everything runs in your browser.
   - Audit working papers
  
 **File Preview**
-<img width="1136" height="691" alt="Screenshot 2026-01-20 060855" src="https://github.com/user-attachments/assets/62933146-14fd-4b07-b327-30eac8d051ed" />
+<img width="1136" height="691" alt="Screenshot 2026-01-20 060855" src="https://github.com/user-attachments/assets/32920109-0ce1-4c28-8abb-fb6863b19433" />
+
 
 ---
 
@@ -59,7 +60,7 @@ No server processing. No data storage. Everything runs in your browser.
   - Breakup reconciliation (Tax/Surcharge/Cess/Interest/Penalty/Others)
 
 **File Preview**
-<img width="703" height="111" alt="Screenshot 2026-01-20 060719" src="https://github.com/user-attachments/assets/ca139b85-3ef7-4664-baf7-eb5ddca0bb71" />
+<img width="703" height="111" alt="Screenshot 2026-01-20 060719" src="https://github.com/user-attachments/assets/3cd298b9-5cde-45cf-9d48-fe8b9a8312a2" />
 
 ---
 
